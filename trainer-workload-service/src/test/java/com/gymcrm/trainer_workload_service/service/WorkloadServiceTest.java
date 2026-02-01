@@ -24,9 +24,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 /**
  * Test for WorkloadService.
  * 
- * Note: Testcontainers is disabled due to Docker Desktop connectivity issues on Windows.
- * Tests use the existing MongoDB container from docker-compose (port 27017).
- * The MongoDB connection is configured in application-test.properties.
+ * Cross-platform support:
+ * - Uses Testcontainers when enabled (testcontainers.enabled=true) and Docker is available
+ * - Falls back to docker-compose MongoDB when Testcontainers is disabled
+ * 
+ * MongoDB connection is configured in application-test.properties
+ * To use Testcontainers: set testcontainers.enabled=true and ensure Docker is running
+ * To use docker-compose: set testcontainers.enabled=false and ensure docker-compose containers are running
  */
 @DataMongoTest
 @ActiveProfiles("test")
@@ -34,13 +38,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @Import({CommandRepositoryImpl.class, WorkloadService.class})
 public class WorkloadServiceTest {
 
-    // Testcontainers MongoDB configuration - DISABLED due to Docker connectivity issues
-    // Uncomment when Docker Desktop connectivity is working:
-    /*
-    @Container
-    @ServiceConnection
-    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:latest");
-    */
+    // Testcontainers is configured via MongoTestConfig.java
+    // When testcontainers.enabled=false, uses MongoDB from docker-compose (port 27017)
 
     @Autowired
     private WorkloadService workloadService;
