@@ -10,14 +10,17 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 public class TrainingTypeSteps {
     @Autowired private MockMvc mockMvc;
@@ -42,6 +45,22 @@ public class TrainingTypeSteps {
     @When("I request all training types")
     public void iRequestAllTrainingTypes() throws Exception {
         latestResponse = mockMvc.perform(get("/api/training-types"));
+    }
+
+    @When("I request all training types without credentials")
+    public void iRequestAllTrainingTypesWithoutCredentials() throws Exception {
+        latestResponse = mockMvc.perform(get("/api/training-types")
+                .contentType(MediaType.APPLICATION_JSON));
+    }
+
+    @When("I attempt to manually create a training type named {string}")
+    public void iAttemptToCreateType(String typeName) throws Exception {
+        String jsonBody = "{\"trainingTypeName\": \"" + typeName + "\"}";
+
+        latestResponse = mockMvc.perform(post("/api/training-types")
+                .with(user("lilia.levada").roles("TRAINER"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonBody));
     }
 
     @Then("the training types response status should be {int}")

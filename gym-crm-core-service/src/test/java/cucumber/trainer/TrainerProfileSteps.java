@@ -59,8 +59,16 @@ public class TrainerProfileSteps {
     @Given("the system is initialized with a trainer {string} and password {string}")
     public void theSystemIsInitialized(String username, String password) {
         if (trainerService.findByUsername(username).isEmpty()) {
+            // Parse names from username (e.g., "other.trainer" -> "other", "trainer")
+            String[] names = username.split("\\.");
+            String firstName = names[0].substring(0, 1).toUpperCase() + names[0].substring(1);
+            String lastName = (names.length > 1) ?
+                    names[1].substring(0, 1).toUpperCase() + names[1].substring(1) : "Trainer";
+
             var registrationRequest = new TrainerRegistrationRequest(
-                    "Lilia", "Levada", "Yoga"
+                    firstName,
+                    lastName,
+                    "Yoga"
             );
             gymFacade.registerTrainer(registrationRequest);
         }
@@ -148,5 +156,42 @@ public class TrainerProfileSteps {
         org.junit.jupiter.api.Assertions.assertTrue(
                 trainerService.findByUsername(username).isEmpty()
         );
+    }
+
+    @When("I request my trainer profile without credentials")
+    public void iRequestProfileWithoutAuth() throws Exception {
+        // No .with(user(...)) call to simulate anonymous access
+        testContext.setResponse(mockMvc.perform(get("/api/trainer/profile")));
+    }
+
+    @When("I update trainer {string} profile with the following details:")
+    public void iUpdateOtherTrainerProfile(String targetUsername, io.cucumber.datatable.DataTable dataTable) throws Exception {
+        var data = dataTable.asMaps().get(0);
+        TrainerProfileUpdateRequest request = new TrainerProfileUpdateRequest(
+                targetUsername,
+                data.get("firstName"),
+                data.get("lastName"),
+                "Yoga",
+                Boolean.valueOf(data.get("isActive"))
+        );
+
+        // Authenticated as lilia, but trying to modify someone else (targetUsername)
+        testContext.setResponse(mockMvc.perform(put("/api/trainer/profile")
+                .with(user("lilia.levada").roles("TRAINER"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request))));
+    }
+
+    @When("I attempt to delete the trainer profile for {string} as a trainer")
+    public void iDeleteAsTrainer(String username) throws Exception {
+        // Only ADMIN should be able to delete; TRAINER role should get 403
+        testContext.setResponse(mockMvc.perform(delete("/api/trainer/" + username)
+                .with(user("lilia.levada").roles("TRAINER"))));
+    }
+
+    @When("I request profile for {string} as an administrator")
+    public void iRequestNonExistentProfile(String username) throws Exception {
+        testContext.setResponse(mockMvc.perform(get("/api/trainer/" + username)
+                .with(user("admin").roles("ADMIN"))));
     }
 }

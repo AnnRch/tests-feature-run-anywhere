@@ -15,6 +15,10 @@ import static io.restassured.RestAssured.given;
 
 public class TrainerE2ESteps extends CucumberConfiguration {
 
+    private Response lastErrorResponse;
+    private String otherTrainerUsername;
+    private String otherTrainerPassword;
+    private String otherTrainingId;
     private String jwtToken;
     private String capturedPassword;
     private String actualUsername;
@@ -46,10 +50,10 @@ public class TrainerE2ESteps extends CucumberConfiguration {
     }
 
     @Given("a new trainer {string} registers on the Gym Service")
-    public void registerTrainer(String username) {
+    public void registerTrainer(String alias) {
         String uniqueSuffix = String.valueOf(System.currentTimeMillis()).substring(8);
         Map<String, String> request = Map.of(
-                "firstName", "Lilia",
+                "firstName", alias.contains(".") ? alias.split("\\.")[0] : alias,
                 "lastName", "Levada" + uniqueSuffix,
                 "specializationName", "Crossfit"
         );
@@ -63,9 +67,86 @@ public class TrainerE2ESteps extends CucumberConfiguration {
                 .statusCode(201)
                 .extract().response();
 
-        capturedPassword = response.path("password");
-        actualUsername = response.path("username");
-        System.out.println("DEBUG: Registered actual username: " + actualUsername);
+        if (alias.equals("lilia.levada")) {
+            actualUsername = response.path("username");
+            capturedPassword = response.path("password");
+        } else {
+            otherTrainerUsername = response.path("username");
+            otherTrainerPassword = response.path("password"); // Capture this!
+        }
+    }
+
+    @When("I request the workload for the trainer with an expired or invalid token")
+    public void requestWithInvalidToken() {
+        lastErrorResponse = given()
+                .header("Authorization", "Bearer invalid_token_xyz")
+                .queryParam("username", "any_user")
+                .when()
+                .get(WORKLOAD_API + "/api/workload");
+    }
+
+    @Given("the {string} adds a {int}-minute training")
+    public void otherTrainerAddsTraining(String alias, int duration) {
+        if (otherTrainerUsername == null || actualTraineeUsername == null) {
+            throw new IllegalStateException("Setup failed: Trainer or Trainee username is missing!");
+        }
+
+        String otherTrainerToken = given()
+                .contentType("application/json")
+                .body(Map.of(
+                        "username", otherTrainerUsername,
+                        "password", otherTrainerPassword
+                ))
+                .when()
+                .post(GYM_API + "/api/auth/login")
+                .then()
+                .statusCode(200)
+                .extract().path("token");
+
+        TrainingCreateRequest request = new TrainingCreateRequest(
+                actualTraineeUsername,
+                otherTrainerUsername,
+                "Other Training Session",
+                LocalDate.now(),
+                duration
+        );
+
+        given()
+                .header("Authorization", "Bearer " + otherTrainerToken) // Use the temporary token
+                .contentType("application/json")
+                .body(request)
+                .when()
+                .post(GYM_API + "/api/training/add")
+                .then()
+                .statusCode(200);
+
+        otherTrainingId = fetchLastTrainingIdWithToken(otherTrainerUsername, otherTrainerToken);
+    }
+    @When("the trainer {string} attempts to delete the training of {string}")
+    public void deleteOtherTrainerTraining(String me, String other) {
+        // 'otherTrainingId' would be fetched via an admin or during setup
+        lastErrorResponse = given()
+                .header("Authorization", "Bearer " + jwtToken) // My token
+                .when()
+                .delete(GYM_API + "/api/training/" + otherTrainingId);
+    }
+
+    @When("the trainer {string} adds a {int}-minute training named {string}")
+    public void addNegativeDurationTraining(String username, int duration, String name) {
+        Map<String, Object> request = Map.of(
+                "traineeUsername", "natali.ageeva",
+                "trainerUsername", actualUsername,
+                "trainingName", name,
+                "trainingDate", "2026-03-10",
+                "trainingDuration", duration
+        );
+
+        lastErrorResponse = given()
+                .header("Authorization", "Bearer " + jwtToken)
+                .contentType("application/json")
+                .body(request)
+                .when()
+                .post(GYM_API + "/api/training/add");
     }
 
     @Then("the trainer {string} logs in to obtain a JWT token")
@@ -83,6 +164,31 @@ public class TrainerE2ESteps extends CucumberConfiguration {
                 .then()
                 .statusCode(200)
                 .extract().path("token");
+    }
+
+    @Then("the workload for {string} should not change")
+    public void verifyWorkloadNotChanged(String username) {
+        Response response = given()
+                .header("Authorization", "Bearer " + jwtToken)
+                .queryParam("username", actualUsername)
+                .when()
+                .get(WORKLOAD_API + "/api/workload");
+
+        if (response.getStatusCode() == 200) {
+            Object years = response.jsonPath().get("years");
+            org.junit.jupiter.api.Assertions.assertTrue(years == null || ((java.util.List<?>)years).isEmpty(),
+                    "Workload should have been empty but found data!");
+        }
+    }
+
+    @Then("the response status should be {int}")
+    public void verifyGenericResponseStatus(int expectedStatus) {
+        lastErrorResponse.then().statusCode(expectedStatus);
+    }
+
+    @Then("the gym service should reject the request with status {int}")
+    public void verifyGymServiceRejection(int expectedStatus) {
+        lastErrorResponse.then().statusCode(expectedStatus);
     }
 
     @Then("the trainer {string} should eventually exist in the Workload Service")
@@ -211,5 +317,18 @@ public class TrainerE2ESteps extends CucumberConfiguration {
                         throw new AssertionError("Expected 404 or 403, but got " + statusCode);
                     }
                 });
+    }
+
+    private String fetchLastTrainingIdWithToken(String trainerUsername, String token) {
+        Response response = given()
+                .header("Authorization", "Bearer " + token)
+                .queryParam("username", trainerUsername)
+                .when()
+                .get(GYM_API + "/api/trainer/trainings")
+                .then()
+                .statusCode(200)
+                .extract().response();
+
+        return response.jsonPath().getString("trainings[0].id");
     }
 }

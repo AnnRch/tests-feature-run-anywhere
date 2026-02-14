@@ -61,8 +61,17 @@ public class TrainingSteps {
     @Given("the system has a trainer {string}")
     public void systemHasTrainer(String username) {
         if (trainerService.findByUsername(username).isEmpty()) {
+            // Split "other.trainer" into ["other", "trainer"]
+            String[] names = username.split("\\.");
+            String firstName = names[0].substring(0, 1).toUpperCase() + names[0].substring(1);
+            String lastName = (names.length > 1)
+                    ? names[1].substring(0, 1).toUpperCase() + names[1].substring(1)
+                    : "Trainer";
+
             gymFacade.registerTrainer(new TrainerRegistrationRequest(
-                    "Lilia", "Levada", "Yoga"));
+                    firstName,
+                    lastName,
+                    "Yoga")); // Specialization can be generic
         }
     }
 
@@ -118,5 +127,22 @@ public class TrainingSteps {
     public void iDeleteThatTrainingSession() throws Exception {
         latestResponse = mockMvc.perform(delete("/api/training/{id}", lastCreatedTrainingId)
                 .with(user(TRAINER_USER).roles("TRAINER")));
+    }
+
+    @When("I create a training session without credentials")
+    public void iCreateTrainingNoAuth() throws Exception {
+        TrainingCreateRequest request = new TrainingCreateRequest(
+                "natali.ageeva", "lilia.levada", "Ghost Session", LocalDate.now(), 30);
+
+        // No .with(user(...))
+        latestResponse = mockMvc.perform(post("/api/training/add")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)));
+    }
+
+    @When("I attempt to delete a training with ID {string}")
+    public void iDeleteNonExistent(String id) throws Exception {
+        latestResponse = mockMvc.perform(delete("/api/training/{id}", UUID.fromString(id))
+                .with(user("lilia.levada").roles("TRAINER")));
     }
 }

@@ -37,4 +37,4 @@ Feature: Trainer Profile Management
     Given I am an administrator
     When I delete the trainer profile for "lilia.levada"
     Then the response status should be 200
-    And the trainer "John.Doe" should no longer exist
+    And the trainer "lilia.levada" should no longer exist

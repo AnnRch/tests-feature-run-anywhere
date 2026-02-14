@@ -8,6 +8,7 @@ import com.gymcrm.gym_crm_spring.dto.TrainerRegistrationRequest;
 import com.gymcrm.gym_crm_spring.facade.GymFacade;
 import com.gymcrm.gym_crm_spring.service.UserService;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.BeforeAll;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -17,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.util.Optional;
+import java.util.TimeZone;
 
 import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -34,6 +36,11 @@ public class AuthSteps {
 
     private ResultActions latestResponse;
 
+    @BeforeAll
+    public static void setup(){
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+    }
+
     @When("I register a trainee with the following details:")
     public void iRegisterTrainee(DataTable dataTable) throws Exception {
         var data = dataTable.asMaps().get(0);
@@ -48,7 +55,6 @@ public class AuthSteps {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)));
     }
-
 
     @When("I register a trainer with the following details:")
     public void iRegisterTrainer(DataTable dataTable) throws Exception {
@@ -107,5 +113,30 @@ public class AuthSteps {
     @Then("the response should contain a JWT token")
     public void verifyJwtToken() throws Exception {
         latestResponse.andExpect(jsonPath("$.token", notNullValue()));
+    }
+
+    @When("I register a trainee with the following invalid details:")
+    public void iRegisterTraineeInvalid(DataTable dataTable) throws Exception {
+        var data = dataTable.asMaps().get(0);
+        // Creating a request where firstName might be empty/null based on table
+        var request = new TraineeRegistrationRequest(
+                data.get("firstName"),
+                data.get("lastName"),
+                Optional.empty(),
+                Optional.empty()
+        );
+
+        latestResponse = mockMvc.perform(post("/api/auth/register/trainee")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)));
+    }
+
+    @When("I attempt to change password for {string} from {string} to {string} without authentication")
+    public void iChangePasswordWithoutAuth(String username, String oldPass, String newPass) throws Exception {
+        var request = new ChangePasswordRequest(username, oldPass, newPass);
+
+        latestResponse = mockMvc.perform(put("/api/auth/change-login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)));
     }
 }

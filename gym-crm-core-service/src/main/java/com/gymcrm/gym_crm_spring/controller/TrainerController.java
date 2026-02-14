@@ -105,10 +105,18 @@ public class TrainerController {
     }
 
     @DeleteMapping("/{username}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteTrainer(@PathVariable("username") String username){
         gymFacade.deleteTrainerProfile(username);
         return trainerService.findByUsername(username).isEmpty()
                 ? ResponseEntity.ok("Successful")
                 : ResponseEntity.badRequest().body("Failed");
+    }
+
+    @Operation(summary = "Get Trainer Profile by Username", description = "Admin only: Returns trainer profile by username")
+    @GetMapping("/{username}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public TrainerProfileResponse getProfileByUsername(@PathVariable String username) {
+        return gymFacade.getTrainerProfile(username);
     }
 }

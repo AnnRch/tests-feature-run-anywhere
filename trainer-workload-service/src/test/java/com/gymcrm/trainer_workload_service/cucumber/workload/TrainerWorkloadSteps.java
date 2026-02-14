@@ -82,6 +82,22 @@ public class TrainerWorkloadSteps extends CucumberConfiguration {
                 .contentType(MediaType.APPLICATION_JSON)));
     }
 
+    @When("I request the workload for trainer {string} without credentials")
+    public void getWorkloadNoAuth(String username) throws Exception {
+        // Performing GET without the .with(user(...)) post-processor
+        testContext.setResponse(mockMvc.perform(get("/api/workload")
+                .param("username", username)
+                .contentType(MediaType.APPLICATION_JSON)));
+    }
+
+    @When("I request the workload with a missing username parameter")
+    public void getWorkloadMissingParam() throws Exception {
+        // Simulating a bad request by omitting the required "username" query parameter
+        testContext.setResponse(mockMvc.perform(get("/api/workload")
+                .with(user("admin"))
+                .contentType(MediaType.APPLICATION_JSON)));
+    }
+
     @Then("the workload response status should be {int}")
     public void verifyStatus(int status) throws Exception {
         testContext.getResponse().andExpect(status().is(status));
