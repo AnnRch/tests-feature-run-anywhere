@@ -27,6 +27,8 @@ repositories {
 dependencyManagement {
     imports {
         mavenBom "org.testcontainers:testcontainers-bom:1.19.3"
+        // ADD THIS: It provides the versions for io.awspring.cloud artifacts
+        mavenBom "io.awspring.cloud:spring-cloud-aws-dependencies:3.2.1"
     }
 }
 
@@ -49,7 +51,10 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     testImplementation 'org.springframework.boot:spring-boot-starter-activemq'
+//    implementation 'io.awspring.cloud:spring-cloud-aws-starter-sqs'
     testImplementation 'org.springframework.boot:spring-boot-starter-web'
+
+    testImplementation 'io.awspring.cloud:spring-cloud-aws-starter-sqs'
 
     // 5. Cucumber
     testImplementation 'io.cucumber:cucumber-java:7.15.0'

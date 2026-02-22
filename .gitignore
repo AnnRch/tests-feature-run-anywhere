@@ -61,3 +61,5 @@ test-results/
 # ===== H2 database =====
 gym-crm-core-service/data/
 **/data/*.mv.db
+*.tar
+*.tar

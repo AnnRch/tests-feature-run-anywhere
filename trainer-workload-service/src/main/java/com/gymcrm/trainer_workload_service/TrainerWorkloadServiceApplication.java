@@ -4,9 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.jms.annotation.EnableJms;
+//import org.springframework.jms.annotation.EnableJms;
 
-@EnableJms
+//@EnableJms
 @SpringBootApplication
 @EnableDiscoveryClient
 @ComponentScan(basePackages = "com.gymcrm.trainer_workload_service")

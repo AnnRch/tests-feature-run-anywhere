@@ -18,14 +18,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Service
+//@Service
 @Slf4j
 @RequiredArgsConstructor
 public class WorkloadService {
 
     private final Map<String, TrainerWorkload> workloadMap = new ConcurrentHashMap<>();
-    private final CommandRepository commandRepository;
-    private final QueryRepository queryRepository;
+//    private final CommandRepository commandRepository;
+//    private final QueryRepository queryRepository;
 
     public void updateWorkload(TrainerWorkloadRequest request) {
         log.info("Updating workload for trainer: {}", request.getUsername());
@@ -40,7 +40,9 @@ public class WorkloadService {
     }
 
     public TrainerWorkload getWorkload(String username) {
-        return queryRepository.findByUsername(username);
+
+//        return queryRepository.findByUsername(username);
+        return null;
     }
 
     public void createTrainerLogic(TrainerWorkloadRequest request){
@@ -51,15 +53,16 @@ public class WorkloadService {
                 .status(request.getIsActive() ? "ACTIVE" : "INACTIVE")
                 .build();
 
-        commandRepository.createTrainerIfNotExists(trainerWorkload);
+//        commandRepository.createTrainerIfNotExists(trainerWorkload);
     }
 
     public void saveTrainerData(TrainerWorkloadRequest request){
-        commandRepository.updateTrainerYearMonthDuration(request);
+//        commandRepository.updateTrainerYearMonthDuration(request);
     }
 
     public void deleteTrainer(String username){
-        commandRepository.deleteByUsername(username);
+
+//        commandRepository.deleteByUsername(username);
     }
 
     private void handleAdd(TrainerWorkloadRequest request) {
