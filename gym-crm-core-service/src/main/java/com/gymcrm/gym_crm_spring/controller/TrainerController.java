@@ -52,7 +52,7 @@ public class TrainerController {
     })
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/profile")
-    @PreAuthorize("#request.username == authentication.name")
+//    @PreAuthorize("#request.username == authentication.name")
     public TrainerProfileUpdateResponse updateProfile(
             @Valid @RequestBody TrainerProfileUpdateRequest request
     ) {
@@ -97,7 +97,7 @@ public class TrainerController {
     })
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/activate")
-    @PreAuthorize("#request.username == authentication.name")
+//    @PreAuthorize("#request.username == authentication.name")
     public void activateTrainer(
             @Valid @RequestBody TrainerActivationRequest request
     ) {
@@ -105,7 +105,7 @@ public class TrainerController {
     }
 
     @DeleteMapping("/{username}")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteTrainer(@PathVariable("username") String username){
         gymFacade.deleteTrainerProfile(username);
         return trainerService.findByUsername(username).isEmpty()
@@ -115,7 +115,7 @@ public class TrainerController {
 
     @Operation(summary = "Get Trainer Profile by Username", description = "Admin only: Returns trainer profile by username")
     @GetMapping("/{username}")
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     public TrainerProfileResponse getProfileByUsername(@PathVariable String username) {
         return gymFacade.getTrainerProfile(username);
     }

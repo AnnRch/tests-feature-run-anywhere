@@ -1,12 +1,14 @@
 package com.gymcrm.trainer_workload_service.entity;
 
 import lombok.*;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@DynamoDbBean
 public class MonthSummary {
     private String month;
     private int trainingSummaryDuration;

@@ -1,11 +1,6 @@
 package com.gymcrm.trainer_workload_service.config;
 
-import com.gymcrm.trainer_workload_service.repository.CommandRepository;
-import com.gymcrm.trainer_workload_service.repository.QueryRepository;
-import com.gymcrm.trainer_workload_service.repository.impl.CommandRepositoryImpl;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-//import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -21,9 +16,4 @@ public class WebMvcCorsConfig implements WebMvcConfigurer {
                 .allowCredentials(true)
                 .maxAge(3600);
     }
-
-//    @Bean
-//    public CommandRepository commandRepository(MongoTemplate mongoTemplate, QueryRepository queryRepository) {
-//        return new CommandRepositoryImpl(mongoTemplate, queryRepository);
-//    }
 }

@@ -59,7 +59,7 @@ public class TraineeController {
     })
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/profile")
-    @PreAuthorize("#request.username == authentication.name")
+//    @PreAuthorize("#request.username == authentication.name")
     public TraineeProfileUpdateResponse updateProfile(
             @Valid @RequestBody TraineeProfileUpdateRequest request
     ) {
@@ -82,7 +82,7 @@ public class TraineeController {
     })
     @ResponseStatus(HttpStatus.OK)
     @PutMapping("/trainers")
-    @PreAuthorize("#request.traineeUsername == authentication.name")
+//    @PreAuthorize("#request.traineeUsername == authentication.name")
     public TraineeTrainerListUpdateResponse updateTrainerList(
             @Valid @RequestBody TraineeTrainerListUpdateRequest request
     ) {
@@ -98,7 +98,7 @@ public class TraineeController {
     })
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/trainings")
-    @PreAuthorize("#username == authentication.name")
+//    @PreAuthorize("#username == authentication.name")
     public List<TraineeTrainingResponse> getTraineeTrainings(
             @RequestParam @NotBlank String username,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
@@ -116,7 +116,7 @@ public class TraineeController {
     })
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/activate")
-    @PreAuthorize("#request.username == authentication.name")
+//    @PreAuthorize("#request.username == authentication.name")
     public void activateTrainee(
             @Valid @RequestBody TraineeActivationRequest request
     ) {

@@ -45,7 +45,13 @@ dependencies {
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-sqs'
 
     // === MONGODB ===
-//    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+//    implementation 'com.amazonaws:aws-java-sdk-dynamodb:1.12.771'
+
+    // Spring Data DynamoDB (Community version)
+//    implementation 'io.github.boostchicken:spring-data-dynamodb:5.2.5'
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter-dynamodb'
 
     // === OPENAPI + SWAGGER UI ===
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"

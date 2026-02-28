@@ -19,12 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class WorkloadController {
 
-//    private final WorkloadService workloadService;
+    private final WorkloadService workloadService;
 
     @PostMapping
     public ResponseEntity<Void> updateWorkload(@RequestBody TrainerWorkloadRequest request) {
         log.info("Received request to update workload. Action: {}", request.getActionType());
-//        workloadService.updateWorkload(request);
+        workloadService.updateWorkload(request);
         return ResponseEntity.ok().build();
     }
 
@@ -32,11 +32,10 @@ public class WorkloadController {
     public ResponseEntity<TrainerWorkload> getWorkload(@RequestParam("username") String username) {
         log.info("Received request to get workload for user: {}", username);
 
-//        TrainerWorkload workload = workloadService.getWorkload(username);
-//        if (workload == null) {
-//            return ResponseEntity.notFound().build();
-//        }
-//        return ResponseEntity.ok(workload);
-        return null;
+        TrainerWorkload workload = workloadService.getWorkload(username);
+        if (workload == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(workload);
     }
 }

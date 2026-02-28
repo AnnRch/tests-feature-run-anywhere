@@ -33,7 +33,7 @@ public class TrainingController {
     })
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/add")
-    @PreAuthorize("#request.trainerUsername == authentication.name")
+//    @PreAuthorize("#request.trainerUsername == authentication.name")
     public void addTraining(
             @Valid @RequestBody TrainingCreateRequest request
     ) {
@@ -46,7 +46,7 @@ public class TrainingController {
             @ApiResponse(responseCode = "404", description = "Training not found")
     })
     @DeleteMapping("/{id}")
-    @PreAuthorize("@trainingSecurity.isTrainerOwner(#id, authentication.name)")
+//    @PreAuthorize("@trainingSecurity.isTrainerOwner(#id, authentication.name)")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTraining(@PathVariable UUID id) {
         gymFacade.deleteTraining(id);
