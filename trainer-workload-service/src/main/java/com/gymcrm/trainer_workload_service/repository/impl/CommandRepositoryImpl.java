@@ -1,11 +1,10 @@
 package com.gymcrm.trainer_workload_service.repository.impl;
 
-import com.gymcrm.trainer_workload_service.dto.TrainerWorkloadRequest;
+import com.gymcrm.gym_crm_spring.dto.workload.TrainerWorkloadRequest;
 import com.gymcrm.trainer_workload_service.entity.MonthSummary;
 import com.gymcrm.trainer_workload_service.entity.TrainerWorkload;
 import com.gymcrm.trainer_workload_service.entity.YearSummary;
 import com.gymcrm.trainer_workload_service.repository.CommandRepository;
-import com.gymcrm.trainer_workload_service.repository.QueryRepository;
 //import com.mongodb.client.result.DeleteResult;
 //import com.mongodb.client.result.UpdateResult;
 import io.awspring.cloud.dynamodb.DynamoDbTemplate;
@@ -16,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 //import org.springframework.data.mongodb.core.query.Query;
 //import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
+import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 
 import java.util.ArrayList;
@@ -27,6 +27,7 @@ import java.util.Map;
 public class CommandRepositoryImpl implements CommandRepository {
 
     private final DynamoDbTemplate dynamoDbTemplate;
+    private final DynamoDbTable<TrainerWorkload> trainerTable;
 
     private final Map<Integer, String> monthsMap = Map.ofEntries(
             Map.entry(1, "JANUARY"),
@@ -45,17 +46,17 @@ public class CommandRepositoryImpl implements CommandRepository {
 
     @Override
     public void createTrainerIfNotExists(TrainerWorkload trainerWorkload) {
-        TrainerWorkload existing = dynamoDbTemplate.load(
-                Key.builder().partitionValue(trainerWorkload.getUsername()).build(),
-                TrainerWorkload.class);
+
+        Key key = Key.builder().partitionValue(trainerWorkload.getUsername()).build();
+        TrainerWorkload existing = trainerTable.getItem(key);
 
         if (existing == null) {
             if (trainerWorkload.getYears() == null) {
                 trainerWorkload.setYears(new ArrayList<>());
             }
-            dynamoDbTemplate.save(trainerWorkload);
+            // USE trainerTable HERE
+            trainerTable.putItem(trainerWorkload);
             log.info("Created new trainer workload for {}", trainerWorkload.getUsername());
-
         }
     }
 
@@ -66,21 +67,25 @@ public class CommandRepositoryImpl implements CommandRepository {
         String month = request.getTrainingDate().getMonth().name();
         int duration = calculateDuration(request);
 
-        TrainerWorkload workload = dynamoDbTemplate.load(
-                Key.builder().partitionValue(username).build(),
-                TrainerWorkload.class);
+        // CHANGE: Use trainerTable.getItem() instead of template.load()
+        Key key = Key.builder().partitionValue(username).build();
+        TrainerWorkload workload = trainerTable.getItem(key);
 
         if (workload == null) {
-            log.warn("Trainer {} not found, cannot update duration", username);
-            return;
+            log.info("Trainer {} not found, creating skeleton workload for update.", request.getUsername());
+            workload = new TrainerWorkload();
+            workload.setUsername(request.getUsername());
+            workload.setYears(new ArrayList<>());
         }
 
+        // ... (Your existing logic for updating year/month lists remains the same) ...
+        TrainerWorkload finalWorkload = workload;
         YearSummary yearSummary = workload.getYears().stream()
                 .filter(y -> y.getYear() == year)
                 .findFirst()
                 .orElseGet(() -> {
                     YearSummary newYear = new YearSummary(year, new ArrayList<>());
-                    workload.getYears().add(newYear);
+                    finalWorkload.getYears().add(newYear);
                     return newYear;
                 });
 
@@ -94,17 +99,27 @@ public class CommandRepositoryImpl implements CommandRepository {
                 });
 
         monthSummary.setTrainingSummaryDuration(monthSummary.getTrainingSummaryDuration() + duration);
-        dynamoDbTemplate.save(workload);
+
+        // CHANGE: Use trainerTable.putItem() instead of template.save()
+        trainerTable.putItem(workload);
     }
 
     @Override
     public void deleteByUsername(String username) {
+        Key key = Key.builder()
+                .partitionValue(username)
+                .build();
 
-        TrainerWorkload workload = new TrainerWorkload();
-        workload.setUsername(username);
+        // CHANGE: Use trainerTable.getItem()
+        TrainerWorkload workload = trainerTable.getItem(key);
 
-        dynamoDbTemplate.delete(workload);
-        log.info("Deleted workload for trainer: {}", username);
+        if (workload != null) {
+            // CHANGE: Use trainerTable.deleteItem()
+            trainerTable.deleteItem(key);
+            log.info("Deleted workload for trainer: {}", username);
+        } else {
+            log.warn("Trainer workload not found for deletion: {}", username);
+        }
     }
 
 

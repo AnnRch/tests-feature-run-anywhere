@@ -1,10 +1,7 @@
 package com.gymcrm.trainer_workload_service.entity;
 
 import lombok.*;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.CompoundIndexes;
-import org.springframework.data.mongodb.core.mapping.Document;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 //import org.springframework.data.annotation.Id;
@@ -28,6 +25,7 @@ public class TrainerWorkload {
     private List<YearSummary> years;
 
     @DynamoDbPartitionKey
+    @DynamoDbAttribute("trainerName")
     public String getUsername(){
         return username;
     }

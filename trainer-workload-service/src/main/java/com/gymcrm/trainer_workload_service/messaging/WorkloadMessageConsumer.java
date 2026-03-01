@@ -1,6 +1,6 @@
 package com.gymcrm.trainer_workload_service.messaging;
 
-import com.gymcrm.trainer_workload_service.dto.TrainerWorkloadRequest;
+import com.gymcrm.gym_crm_spring.dto.workload.TrainerWorkloadRequest;
 import com.gymcrm.trainer_workload_service.service.WorkloadService;
 import io.awspring.cloud.sqs.annotation.SqsListener;
 import io.awspring.cloud.sqs.operations.SqsTemplate;

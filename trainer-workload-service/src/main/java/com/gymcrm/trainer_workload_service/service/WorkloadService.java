@@ -1,7 +1,7 @@
 package com.gymcrm.trainer_workload_service.service;
 
-import com.gymcrm.trainer_workload_service.dto.ActionType;
-import com.gymcrm.trainer_workload_service.dto.TrainerWorkloadRequest;
+import com.gymcrm.gym_crm_spring.dto.workload.ActionType;
+import com.gymcrm.gym_crm_spring.dto.workload.TrainerWorkloadRequest;
 import com.gymcrm.trainer_workload_service.entity.MonthSummary;
 import com.gymcrm.trainer_workload_service.entity.TrainerWorkload;
 import com.gymcrm.trainer_workload_service.entity.YearSummary;
@@ -53,6 +53,7 @@ public class WorkloadService {
                 .build();
 
         commandRepository.createTrainerIfNotExists(trainerWorkload);
+        commandRepository.updateTrainerYearMonthDuration(request);
     }
 
     public void saveTrainerData(TrainerWorkloadRequest request){

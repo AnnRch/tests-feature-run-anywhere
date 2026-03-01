@@ -1,6 +1,6 @@
 package com.gymcrm.trainer_workload_service.exception;
 
-import com.gymcrm.trainer_workload_service.dto.ErrorResponse;
+import com.gymcrm.gym_crm_spring.dto.workload.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

@@ -1,4 +1,4 @@
-package com.gymcrm.trainer_workload_service.dto;
+package com.gymcrm.gym_crm_spring.dto.workload;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
